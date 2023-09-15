@@ -23,10 +23,38 @@ vector<vector<int>> readGraph(const string& filename, int& numVertices) {
     return graph;
 }
 
+int getVertexIndexWithMostAdjacents(vector<vector<int>> graph, vector<int> candidates){
+    int maxAdj = 0;
+    int maxAdjVertex = 0;
+    int adjacents = 0;
+    int v;
+
+    for (int i = 0; i < candidates.size(); i++){
+        v = candidates[i];
+        adjacents = 0;
+
+        for (int j = 0; j < graph[v].size(); j++){
+            if (graph[v][j] == 1){
+                adjacents++;
+            }
+        }
+
+        if (adjacents > maxAdj){
+            maxAdj = adjacents;
+            maxAdjVertex = i;
+        }
+    }
+
+    return maxAdjVertex;
+    
+}
+
+
 vector<int> findMaxClique(vector<vector<int>> graph, int numVertices){
     vector<int> maxClique;
     vector<int> candidates;
     int v, u, c;
+    int maxAdjVertex = 0;
     bool canAdd, adjacentToAll;
 
     for (int i = 0; i < numVertices; i++){
@@ -35,20 +63,27 @@ vector<int> findMaxClique(vector<vector<int>> graph, int numVertices){
 
     while (candidates.size() > 0){
 
+        // heuristica: escolher o vértice com maior adjacencia
+        maxAdjVertex = getVertexIndexWithMostAdjacents(graph, candidates);
+        v = candidates[maxAdjVertex];
+        candidates.erase(candidates.begin() + maxAdjVertex);
+
         // adiciona o primeiro candidato ao clique
-        v = candidates.back();
-        candidates.pop_back();
+        // v = candidates.back();
+        // candidates.pop_back();
+
         canAdd = true;
 
         // verifica todos os vértices da clique, e ve se eles são adjacentes a v
         // é necessario, pois como arbitrariamente escolheu-se o ultimo, talvez os demais não sejam vizinhos!  
-        for (int n = 0; n < maxClique.size(); n++){
-            u = maxClique[n];
-            if (graph[u][v] == 0){
-                canAdd = false;
-                break;
-            }
-        }
+        
+        // for (int n = 0; n < maxClique.size(); n++){
+        //     u = maxClique[n];
+        //     if (graph[u][v] == 0){
+        //         canAdd = false;
+        //         break;
+        //     }
+        // }
 
         if (canAdd){
             
