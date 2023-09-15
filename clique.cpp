@@ -35,10 +35,13 @@ vector<int> findMaxClique(vector<vector<int>> graph, int numVertices){
 
     while (candidates.size() > 0){
 
+        // adiciona o primeiro candidato ao clique
         v = candidates.back();
         candidates.pop_back();
         canAdd = true;
 
+        // verifica todos os vértices da clique, e ve se eles são adjacentes a v
+        // é necessario, pois como arbitrariamente escolheu-se o ultimo, talvez os demais não sejam vizinhos!  
         for (int n = 0; n < maxClique.size(); n++){
             u = maxClique[n];
             if (graph[u][v] == 0){
@@ -48,9 +51,12 @@ vector<int> findMaxClique(vector<vector<int>> graph, int numVertices){
         }
 
         if (canAdd){
+            
+            // adiciona v e cria novos candidatos
             maxClique.push_back(v);
             vector<int> newCandidates;
 
+            // adiciona todos os novos candidatos, isto é, os que são adjacentes
             for (int n = 0; n < candidates.size(); n++){
                 u = candidates[n];
                 adjacentToAll = true;
@@ -67,6 +73,7 @@ vector<int> findMaxClique(vector<vector<int>> graph, int numVertices){
                     newCandidates.push_back(u);
                 }
             }
+            // atualiza candidatos
             candidates = newCandidates;
         }
     }
