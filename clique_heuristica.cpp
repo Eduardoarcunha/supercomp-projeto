@@ -23,6 +23,32 @@ vector<vector<int>> readGraph(const string& filename, int& numVertices) {
     return graph;
 }
 
+int getVertexIndexWithMostAdjacents(vector<vector<int>> graph, vector<int> candidates){
+    int maxAdj = 0;
+    int maxAdjVertex = 0;
+    int adjacents = 0;
+    int v;
+
+    for (int i = 0; i < candidates.size(); i++){
+        v = candidates[i];
+        adjacents = 0;
+
+        for (int j = 0; j < graph[v].size(); j++){
+            if (graph[v][j] == 1){
+                adjacents++;
+            }
+        }
+
+        if (adjacents > maxAdj){
+            maxAdj = adjacents;
+            maxAdjVertex = i;
+        }
+    }
+
+    return maxAdjVertex;
+    
+}
+
 
 vector<int> findMaxCliqueAdjacentHeuristic(vector<vector<int>> graph, int numVertices){
     vector<int> maxClique;
@@ -36,22 +62,13 @@ vector<int> findMaxCliqueAdjacentHeuristic(vector<vector<int>> graph, int numVer
     }
 
     while (candidates.size() > 0){
-        // adiciona o primeiro candidato ao clique
-        v = candidates.back();
-        candidates.pop_back();
+
+        // heuristica: escolher o vértice com maior adjacencia
+        maxAdjVertex = getVertexIndexWithMostAdjacents(graph, candidates);
+        v = candidates[maxAdjVertex];
+        candidates.erase(candidates.begin() + maxAdjVertex);
 
         canAdd = true;
-
-        // verifica todos os vértices da clique, e ve se eles são adjacentes a v
-        // é necessario, pois como arbitrariamente escolheu-se o ultimo, talvez os demais não sejam vizinhos!  
-        
-        for (int n = 0; n < maxClique.size(); n++){
-            u = maxClique[n];
-            if (graph[u][v] == 0){
-                canAdd = false;
-                break;
-            }
-        }
 
         if (canAdd){
             
