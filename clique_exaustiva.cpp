@@ -69,6 +69,8 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
         auto it = lower_bound(newClique.begin(), newClique.end(), v);
         newClique.insert(it, v);
 
+
+
         // New candidates
         // print_depth(depth);
         // cout << "Pushed " << v << ", getting newCandidates" << endl;
@@ -96,6 +98,10 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
             }
         }
 
+        if (newClique.size() + newCandidates.size() <= maxClique.size()) {
+            continue;
+        }
+
         // print_depth(depth);
         // cout << "New candidates: ";
         // for (int node : newCandidates) {
@@ -103,7 +109,26 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
         // }
         // cout << endl;
 
-        newClique = findCliqueBruteForce(newClique, newCandidates, graph, depth + 1);
+        string key = "";
+        for (int node : newClique) {
+            key += to_string(node) + " ";
+        }
+        key += "|";
+        for (int node : newCandidates) {
+            key += to_string(node) + " ";
+        }
+
+        if (memo.find(key) != memo.end()) {
+            // print_depth(depth);
+            // cout << "Found in memo" << endl;
+            newClique = memo[key];
+        } else {
+            // print_depth(depth);
+            // cout << "Not found in memo" << endl;
+            newClique = findCliqueBruteForce(newClique, newCandidates, graph, depth + 1);
+            memo[key] = newClique;
+        }
+
         if (newClique.size() > maxClique.size()) {
             maxClique = newClique;
         }
@@ -114,7 +139,7 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
 
 int main(int argc, char* argv[]){
 
-    if (argc != 3) {
+    if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
         return 1;
     }
@@ -125,11 +150,11 @@ int main(int argc, char* argv[]){
 
 
     string filename = argv[1];
-    int numVertices = atoi(argv[2]);
-    cout << "Lendo grafo..." << endl;
+    int numVertices;
+    // cout << "Lendo grafo..." << endl;
     matrix = readGraph(filename, numVertices);
     
-    cout << "Encontrando clique maximo..." << endl;
+    // cout << "Encontrando clique maximo..." << endl;
 
     for (int i = 0; i < numVertices; i++) {
         candidates.push_back(i);
@@ -141,6 +166,7 @@ int main(int argc, char* argv[]){
     for (int node : maxClique) {
         cout << node + 1 << " ";
     }
+    
 
     return 0;
 }

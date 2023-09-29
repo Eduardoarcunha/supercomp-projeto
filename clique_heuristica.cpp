@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -104,7 +105,7 @@ vector<int> findMaxCliqueAdjacentHeuristic(vector<vector<int>> graph, int numVer
 
 int main(int argc, char* argv[]){
 
-    if (argc != 3) {
+    if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
         return 1;
     }
@@ -112,11 +113,12 @@ int main(int argc, char* argv[]){
     vector<vector<int>> matrix;
     vector<int> maxClique;
     string filename = argv[1];
-    int numVertices = atoi(argv[2]);
+    int numVertices;
 
     matrix = readGraph(filename, numVertices);
     maxClique = findMaxCliqueAdjacentHeuristic(matrix, numVertices);
 
+    sort(maxClique.begin(), maxClique.end());
     for (int node : maxClique) {
         cout << node + 1 << " ";
     }
