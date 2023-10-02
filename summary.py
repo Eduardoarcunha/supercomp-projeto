@@ -1,18 +1,31 @@
 import subprocess
 import time
 import matplotlib.pyplot as plt
-import pathlib
 from clique import Clique
+import pickle
 
-
+vertices = range(5, 11, 1)
+max0, max1, max2 = 0,0,0
 executables_list = [
     {
-        "name": "brute_force",
-        "executable": "./clique_exaustiva.exe",
+        "name": "brute_force_with_mem",
+        "executable": "./clique_brute.exe",
+    },
+    {
+        "name": "brute_force_without_mem",
+        "executable": "./clique_brute_no_mem.exe",
     },
     {
         "name": "heuristic",
-        "executable": "./clique_heuristica.exe",
+        "executable": "./clique_heuristic.exe",
+    },
+    {
+        "name": "parallel_with_mem",
+        "executable": "./clique_parallel.exe",
+    },
+    {
+        "name": "parallel_without_mem",
+        "executable": "./clique_parallel_no_mem.exe",
     }
 ]
 
@@ -20,11 +33,12 @@ input = "grafo.txt"
 
 data = {
     "solver": [],
-    "brute_force": [],
-    "heuristic": []
+    "brute_force_with_mem": [],
+    "brute_force_without_mem": [],
+    "heuristic": [],
+    "parallel_with_mem": [],
+    "parallel_without_mem": []
 }
-
-vertices = range(5, 101, 1)
 
 for m in vertices:
     print(f'Calculating for {m} vertices...')
@@ -41,7 +55,7 @@ for m in vertices:
 
 
     for n in range(len(executables_list)):
-        executable = './executables' +  executables_list[n]["executable"]
+        executable = './win_executables' +  executables_list[n]["executable"]
         name = executables_list[n]["name"]
 
         print(f"Running {name}...")
@@ -60,8 +74,17 @@ for m in vertices:
         data[name].append(res)
 
 
+output = {
+    "vertices": vertices,
+    "data": data
+}
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (15,9))
+with open('data.pickle', 'wb') as handle:
+    pickle.dump(output, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 15))
+
 ax1.set_title("Tamanho da maior clique")
 ax1.set_xlabel("Número de vértices")
 ax1.set_ylabel("Tamanho da maior clique")
@@ -69,6 +92,14 @@ ax1.set_ylabel("Tamanho da maior clique")
 ax2.set_title("Tempo de execução")
 ax2.set_xlabel("Número de vértices")
 ax2.set_ylabel("Tempo (s)")
+
+ax3.set_title("Tempo de Execução Sem Memoization")
+ax3.set_xlabel("Número de vértices")
+ax3.set_ylabel("Tempo (s)")
+
+ax4.set_title("Tempo de Execução Com Memoization")
+ax4.set_xlabel("Número de vértices")
+ax4.set_ylabel("Tempo (s)")
 
 
 for name in data.keys():
@@ -84,6 +115,22 @@ for name in data.keys():
     ax1.plot(vertices, maximum_cliques, label=name, linewidth=lw)
     ax2.plot(vertices, time, label=name)
 
+    max0 = max(max(time), max0)
+
+    if name in ["brute_force_without_mem", "parallel_without_mem"]:
+        ax3.plot(vertices, time, label=name)
+        max1 = max(max(time), max1)
+
+    if name in ["brute_force_with_mem", "parallel_with_mem"]:
+        ax4.plot(vertices, time, label=name)
+        max2 = max(max(time), max2)
+
+ax2.set_ylim([0, max0 * 1.1])
+ax3.set_ylim([0, max1 * 1.1])
+ax4.set_ylim([0, max2 * 1.1])
+
 ax1.legend()
 ax2.legend()
+ax3.legend()
+ax4.legend()
 plt.savefig("summary.png")

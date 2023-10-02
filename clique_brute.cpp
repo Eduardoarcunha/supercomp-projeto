@@ -8,7 +8,7 @@
 using namespace std;
 
 
-map<string, vector<int>> memo;
+unordered_map<string, vector<int>> memo;
 vector<int> maxClique = {};
 
 
