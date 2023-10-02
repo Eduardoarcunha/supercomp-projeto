@@ -4,133 +4,164 @@ import matplotlib.pyplot as plt
 from clique import Clique
 import pickle
 
-vertices = range(5, 11, 1)
-max0, max1, max2 = 0,0,0
-executables_list = [
-    {
-        "name": "brute_force_with_mem",
-        "executable": "./clique_brute.exe",
-    },
-    {
-        "name": "brute_force_without_mem",
-        "executable": "./clique_brute_no_mem.exe",
-    },
-    {
-        "name": "heuristic",
-        "executable": "./clique_heuristic.exe",
-    },
-    {
-        "name": "parallel_with_mem",
-        "executable": "./clique_parallel.exe",
-    },
-    {
-        "name": "parallel_without_mem",
-        "executable": "./clique_parallel_no_mem.exe",
-    }
-]
-
-input = "grafo.txt"
-
-data = {
-    "solver": [],
-    "brute_force_with_mem": [],
-    "brute_force_without_mem": [],
-    "heuristic": [],
-    "parallel_with_mem": [],
-    "parallel_without_mem": []
-}
-
-for m in vertices:
-    print(f'Calculating for {m} vertices...')
-    Clique.generate_graph(num_vertices=m, connection_probability=0.7)
-
-    res = {}
-    start = time.perf_counter()
-    maximal_cliques, maximum_clique = Clique.find_max_clique(input)
-    end = time.perf_counter()
-
-    res["time"] = end - start
-    res["maximum_clique"] = len(maximum_clique)
-    data["solver"].append(res)
+input_file = "grafo.txt" 
 
 
-    for n in range(len(executables_list)):
-        executable = './win_executables' +  executables_list[n]["executable"]
-        name = executables_list[n]["name"]
+class Summary():
+    def __init__(self, vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True):
+        self.input = "grafo.txt"
+        self.vertices = vertices
+        self.with_mem = with_mem
+        self.without_mem = without_mem
+        self.directory = "./lin_executables"
 
-        print(f"Running {name}...")
-        start = time.perf_counter()
-        proc = subprocess.run([executable, input], text=True, capture_output=True)
-        end = time.perf_counter()
+        self.executables_dict = {
+            "heuristic": {"executable": "/clique_heuristic", "color": "#1f77b4"}
+        }
 
-        # print(f"Tempo de execução do {name}: {end - start:0.4f} segundos")
-        # print(f"Output from {name}:")
-        # print(proc.stdout)  # This line will print the output from the executable
-        # print("----------")
+        if self.without_mem:
+            self.executables_dict["brute_force_without_mem"] = {"executable": "/clique_brute_without_mem", "color": "#ff7f0e"}
+            self.executables_dict["parallel_without_mem"] = {"executable": "/clique_parallel_without_mem", "color": "#2ca02c"}
 
-        res = {}
-        res["time"] = end - start
-        res["maximum_clique"] = len(proc.stdout.split())
-        data[name].append(res)
+        if self.with_mem:
+            self.executables_dict["brute_force_with_mem"] = {"executable": "/clique_brute_with_mem", "color": "#d62728"}
+            self.executables_dict["parallel_with_mem"] = {"executable": "/clique_parallel_with_mem", "color": "#9467bd"}
+
+        if not linux:
+            for name in self.executables_dict:
+                self.executables_dict[name]["executable"] += ".exe"
+            self.directory = "./win_executables"
+
+        self.data = {
+            "solver": [],
+        }
+
+        for executable in self.executables_dict.keys():
+            self.data[executable] = []
+
+        self.output = {
+            "vertices": self.vertices,
+            "data": self.data
+        }
+
+        self.max0, self.max1, self.max2 = 0, 0, 0
+
+    def save_pickle_data(self):
+        with open('data.pickle', 'wb') as handle:
+            pickle.dump(self.output, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def plot_data(self):
+        if self.without_mem and self.with_mem:
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 15))
+            memo_ax = ax4
+            no_memo_ax = ax3
+        elif self.with_mem:
+            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
+            memo_ax = ax3
+            no_memo_ax = None
+        elif self.without_mem:
+            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
+            no_memo_ax = ax3
+            memo_ax = None
+        else:
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 15))
+            no_memo_ax = None
+            memo_ax = None
+
+        ax1.set_title("Tamanho da maior clique")
+        ax1.set_xlabel("Número de vértices")
+        ax1.set_ylabel("Tamanho da maior clique")
+
+        ax2.set_title("Tempo de execução")
+        ax2.set_xlabel("Número de vértices")
+        ax2.set_ylabel("Tempo (s)")
+
+        if no_memo_ax:
+            no_memo_ax.set_title("Tempo de Execução Sem Memoization")
+            no_memo_ax.set_xlabel("Número de vértices")
+            no_memo_ax.set_ylabel("Tempo (s)")
+
+        if memo_ax:
+            memo_ax.set_title("Tempo de Execução Com Memoization")
+            memo_ax.set_xlabel("Número de vértices")
+            memo_ax.set_ylabel("Tempo (s)")
 
 
-output = {
-    "vertices": vertices,
-    "data": data
-}
+        for name in self.data.keys():
+            times = []
+            maximum_cliques = []
 
-with open('data.pickle', 'wb') as handle:
-    pickle.dump(output, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
-
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 15))
-
-ax1.set_title("Tamanho da maior clique")
-ax1.set_xlabel("Número de vértices")
-ax1.set_ylabel("Tamanho da maior clique")
-
-ax2.set_title("Tempo de execução")
-ax2.set_xlabel("Número de vértices")
-ax2.set_ylabel("Tempo (s)")
-
-ax3.set_title("Tempo de Execução Sem Memoization")
-ax3.set_xlabel("Número de vértices")
-ax3.set_ylabel("Tempo (s)")
-
-ax4.set_title("Tempo de Execução Com Memoization")
-ax4.set_xlabel("Número de vértices")
-ax4.set_ylabel("Tempo (s)")
+            for graph_res in self.data[name]:
+                times.append(graph_res["time"])
+                maximum_cliques.append(graph_res["maximum_clique"])
 
 
-for name in data.keys():
-    time = []
-    maximum_cliques = []
+            if name == "solver":
+                lw = 5
+                color = "#1f77b4"
+            else:
+                lw = 2
+                color = self.executables_dict[name]["color"]
 
-    for graph_res in data[name]:
-        time.append(graph_res["time"])
-        maximum_cliques.append(graph_res["maximum_clique"])
+            ax1.plot(self.vertices, maximum_cliques, label=name, linewidth=lw, color=color)
+            ax2.plot(self.vertices, times, label=name, color=color)
 
-    lw = 5 if name == "solver" else 2
+            self.max0 = max(max(times), self.max0)
 
-    ax1.plot(vertices, maximum_cliques, label=name, linewidth=lw)
-    ax2.plot(vertices, time, label=name)
+            if name in ["brute_force_without_mem", "parallel_without_mem"] and no_memo_ax:
+                no_memo_ax.plot(self.vertices, times, label=name, color=color)
+                self.max1 = max(max(times), self.max1)
 
-    max0 = max(max(time), max0)
+            if name in ["brute_force_with_mem", "parallel_with_mem"] and memo_ax:
+                memo_ax.plot(self.vertices, times, label=name, color=color)
+                self.max2 = max(max(times), self.max2)
 
-    if name in ["brute_force_without_mem", "parallel_without_mem"]:
-        ax3.plot(vertices, time, label=name)
-        max1 = max(max(time), max1)
+        ax2.set_ylim([0, self.max0 * 1.1])
 
-    if name in ["brute_force_with_mem", "parallel_with_mem"]:
-        ax4.plot(vertices, time, label=name)
-        max2 = max(max(time), max2)
+        if no_memo_ax:
+            no_memo_ax.set_ylim([0, self.max1 * 1.1])
+            no_memo_ax.legend()
 
-ax2.set_ylim([0, max0 * 1.1])
-ax3.set_ylim([0, max1 * 1.1])
-ax4.set_ylim([0, max2 * 1.1])
+        if memo_ax:
+            memo_ax.set_ylim([0, self.max2 * 1.1])
+            memo_ax.legend()
 
-ax1.legend()
-ax2.legend()
-ax3.legend()
-ax4.legend()
-plt.savefig("summary.png")
+        ax1.legend()
+        ax2.legend()
+        plt.savefig("summary.png")
+        plt.show()
+
+    def calculate_times(self):
+        for m in self.vertices:
+            print(f'Calculating for {m} vertices...')
+            Clique.generate_graph(num_vertices=m, connection_probability=0.7)
+
+            res = {}
+            start = time.perf_counter()
+            maximal_cliques, maximum_clique = Clique.find_max_clique(self.input)
+            end = time.perf_counter()
+
+            res["time"] = end - start
+            res["maximum_clique"] = len(maximum_clique)
+            self.data["solver"].append(res)
+
+            for name, details in self.executables_dict.items():
+                executable = self.directory + details["executable"]
+                print(f"Running {name}...")
+                start = time.perf_counter()
+                proc = subprocess.run([executable, self.input], text=True, capture_output=True)
+                end = time.perf_counter()
+
+                res = {}
+                res["time"] = end - start
+                res["maximum_clique"] = len(proc.stdout.split())
+                self.data[name].append(res)
+
+    def run(self):
+        self.calculate_times()
+        self.save_pickle_data()
+        self.plot_data()
+
+
+summary = Summary(vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True)
+summary.run()
