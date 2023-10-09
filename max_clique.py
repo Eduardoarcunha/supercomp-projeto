@@ -158,5 +158,5 @@ class MaxClique():
         self.save_pickle_data()
         self.plot_data()
 
-max_clique = MaxClique(vertices=range(5, 31, 1), linux=False, with_mem=True, without_mem=True)
+max_clique = MaxClique(vertices=range(5, 61, 1), linux=True, with_mem=True, without_mem=False)
 max_clique.run()
