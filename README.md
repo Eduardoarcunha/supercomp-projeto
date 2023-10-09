@@ -33,6 +33,8 @@ Ao todo, foram feitas 5 implementações para buscar uma solução do problema, 
 
 **5. Força bruta com memoização paralelizada:** Mesma implementação da força bruta com memoização, porém paralelizada utilizando a biblioteca OpenMP.
 
+**Observação:** Além delas, também, para critérios de validação e comparação, também esta presente a implementação da biblioteca networkx, que é capaz de encontrar o maior clique de um grafo.
+
 ## Como executar
 
 Para executar, basta rodar o arquivo max_clique.py, ao final do arquivo, está declarado o objeto MaxClique com os seguintes argumentos:
@@ -61,7 +63,7 @@ chmod +x executables_linux/*
 
 ## Resultados
 
-Primeiramente, para confirmar os resultados das implementações, gerou-se 50 problemas, e comparou os resultados obtidos de cada implementação, com o resultado obtido por um algoritmo da biblioteca networkx, que é capaz de encontrar o maior clique de um grafo. Os resultados obtidos podem ser vistos na imagem abaixo:
+Primeiramente, para confirmar os resultados das implementações, gerou-se 30 problemas, e comparou os resultados obtidos de cada implementação, com o resultado obtido pelo algoritmo da biblioteca networkx, que é capaz de encontrar o maior clique de um grafo. Os resultados obtidos podem ser vistos na imagem abaixo:
 
 
 Confirmando-se os resultados, partiu-se para uma análise de tempo de cada implementação, primeiro, testou-se para 30 problemas, e os resultados obtidos podem ser vistos na imagem abaixo:
