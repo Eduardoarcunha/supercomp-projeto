@@ -3,17 +3,20 @@ import time
 import matplotlib.pyplot as plt
 from clique import Clique
 import pickle
+import uuid
+import os
 
 input_file = "grafo.txt" 
 
 
-class Summary():
+class MaxClique():
     def __init__(self, vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True):
         self.input = "grafo.txt"
         self.vertices = vertices
         self.with_mem = with_mem
         self.without_mem = without_mem
-        self.directory = "./lin_executables"
+        self.directory = "./executables_linux"
+        self.id = f'verts_{len(vertices) + 4}_{str(uuid.uuid4())[:6]}'
 
         self.executables_dict = {
             "heuristic": {"executable": "/clique_heuristic", "color": "#1f77b4"}
@@ -30,7 +33,7 @@ class Summary():
         if not linux:
             for name in self.executables_dict:
                 self.executables_dict[name]["executable"] += ".exe"
-            self.directory = "./win_executables"
+            self.directory = "./executables_windows"
 
         self.data = {
             "solver": [],
@@ -46,90 +49,83 @@ class Summary():
 
         self.max0, self.max1, self.max2 = 0, 0, 0
 
+    def ensure_directory(self, directory):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
     def save_pickle_data(self):
-        with open('data.pickle', 'wb') as handle:
+        directory = f'results/data'
+        self.ensure_directory(directory)
+        with open(f'{directory}/{self.id}.pickle', 'wb') as handle:
             pickle.dump(self.output, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def plot_data(self):
-        if self.without_mem and self.with_mem:
-            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 15))
-            memo_ax = ax4
-            no_memo_ax = ax3
-        elif self.with_mem:
-            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
-            memo_ax = ax3
-            no_memo_ax = None
-        elif self.without_mem:
-            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
-            no_memo_ax = ax3
-            memo_ax = None
-        else:
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 15))
-            no_memo_ax = None
-            memo_ax = None
 
+    def plot_data(self):
+
+        # Ensure the summary directory is created
+        summary_dir = f'results/summaries/summary_{self.id}'
+        self.ensure_directory(summary_dir)
+
+        # Helper function to save and show plots
+        def save_and_show_plot(fig, ax, name):
+            ax.legend()
+            fig.tight_layout()
+            # Save plots in the desired directory structure
+            plt.savefig(f'{summary_dir}/{name}.png')
+
+        # 1. Plot for Maximum Clique Size
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
         ax1.set_title("Tamanho da maior clique")
         ax1.set_xlabel("Número de vértices")
         ax1.set_ylabel("Tamanho da maior clique")
+        for name in self.data.keys():
+            maximum_cliques = [graph_res["maximum_clique"] for graph_res in self.data[name]]
+            lw = 5 if name == "solver" else 2
+            color = self.executables_dict[name]["color"] if name != "solver" else "#FF69B4"
+            ax1.plot(self.vertices, maximum_cliques, label=name, linewidth=lw, color=color)
+        save_and_show_plot(fig1, ax1, "max_clique_size_comparison")
 
+        # 2. Plot for Execution Time
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
         ax2.set_title("Tempo de execução")
         ax2.set_xlabel("Número de vértices")
         ax2.set_ylabel("Tempo (s)")
+        for name in self.data.keys():
+            times = [graph_res["time"] for graph_res in self.data[name]]
+            lw = 5 if name == "solver" else 2
+            color = self.executables_dict[name]["color"] if name != "solver" else "#FF69B4"
+            ax2.plot(self.vertices, times, label=name, color=color)
+            self.max0 = max(self.max0, max(times))
+        ax2.set_ylim([0, self.max0 * 1.1])
+        save_and_show_plot(fig2, ax2, "execution_time_all")
 
-        if no_memo_ax:
+        # 3. Plot for Execution Time without Memoization
+        if self.without_mem:
+            fig3, no_memo_ax = plt.subplots(figsize=(10, 6))
             no_memo_ax.set_title("Tempo de Execução Sem Memoization")
             no_memo_ax.set_xlabel("Número de vértices")
             no_memo_ax.set_ylabel("Tempo (s)")
+            for name in ["brute_force_without_mem", "parallel_without_mem"]:
+                times = [graph_res["time"] for graph_res in self.data[name]]
+                color = self.executables_dict[name]["color"]
+                no_memo_ax.plot(self.vertices, times, label=name, color=color)
+                self.max1 = max(self.max1, max(times))
+            no_memo_ax.set_ylim([0, self.max1 * 1.1])
+            save_and_show_plot(fig3, no_memo_ax, "execution_time_without_memoization")
 
-        if memo_ax:
+        # 4. Plot for Execution Time with Memoization
+        if self.with_mem:
+            fig4, memo_ax = plt.subplots(figsize=(10, 6))
             memo_ax.set_title("Tempo de Execução Com Memoization")
             memo_ax.set_xlabel("Número de vértices")
             memo_ax.set_ylabel("Tempo (s)")
-
-
-        for name in self.data.keys():
-            times = []
-            maximum_cliques = []
-
-            for graph_res in self.data[name]:
-                times.append(graph_res["time"])
-                maximum_cliques.append(graph_res["maximum_clique"])
-
-
-            if name == "solver":
-                lw = 5
-                color = "#1f77b4"
-            else:
-                lw = 2
+            for name in ["brute_force_with_mem", "parallel_with_mem"]:
+                times = [graph_res["time"] for graph_res in self.data[name]]
                 color = self.executables_dict[name]["color"]
-
-            ax1.plot(self.vertices, maximum_cliques, label=name, linewidth=lw, color=color)
-            ax2.plot(self.vertices, times, label=name, color=color)
-
-            self.max0 = max(max(times), self.max0)
-
-            if name in ["brute_force_without_mem", "parallel_without_mem"] and no_memo_ax:
-                no_memo_ax.plot(self.vertices, times, label=name, color=color)
-                self.max1 = max(max(times), self.max1)
-
-            if name in ["brute_force_with_mem", "parallel_with_mem"] and memo_ax:
                 memo_ax.plot(self.vertices, times, label=name, color=color)
-                self.max2 = max(max(times), self.max2)
-
-        ax2.set_ylim([0, self.max0 * 1.1])
-
-        if no_memo_ax:
-            no_memo_ax.set_ylim([0, self.max1 * 1.1])
-            no_memo_ax.legend()
-
-        if memo_ax:
+                self.max2 = max(self.max2, max(times))
             memo_ax.set_ylim([0, self.max2 * 1.1])
-            memo_ax.legend()
-
-        ax1.legend()
-        ax2.legend()
-        plt.savefig("summary.png")
-        plt.show()
+            save_and_show_plot(fig4, memo_ax, "execution_time_with_memoization")
 
     def calculate_times(self):
         for m in self.vertices:
@@ -162,6 +158,5 @@ class Summary():
         self.save_pickle_data()
         self.plot_data()
 
-
-summary = Summary(vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True)
-summary.run()
+max_clique = MaxClique(vertices=range(5, 31, 1), linux=False, with_mem=True, without_mem=True)
+max_clique.run()
