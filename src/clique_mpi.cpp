@@ -35,7 +35,8 @@ void print_depth(int depth){
     }
 }
 
-vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vector<vector<int>> &graph, int depth, int world_rank, int world_size, status){
+vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vector<vector<int>> &graph, int depth, int world_rank, int world_size, MPI_Status status){
+    
     if (candidates.size() == 0){
         return clique;
     }
@@ -53,6 +54,8 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
         start = 0;
         end = candidates.size();
     }
+
+    if (depth == 0) cout << "My start: " << start << " My end: " << end << endl;
 
     for (int i = start; i < end; i++) {
         int v = candidates[i];
@@ -92,6 +95,7 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
     }
 
     if (depth == 0){
+        cout << "I finished my work, rank: " << world_rank << endl;
         int size_tag = 12;
         int vector_tag = 13;
         if (world_rank != 0) {
@@ -103,7 +107,7 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
                 int size;
                 MPI_Recv(&size, 1, MPI_INT, i, size_tag, MPI_COMM_WORLD, &status);
                 vector<int> recvClique(size);
-                MPI_Recv(recvClique.data(), size, MPI_INT, i, vector_tag, MPI_COMM_WORLD, );
+                MPI_Recv(recvClique.data(), size, MPI_INT, i, vector_tag, MPI_COMM_WORLD, &status);
 
                 if (recvClique.size() > maxClique.size()) {
                     maxClique = recvClique;
