@@ -85,19 +85,17 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
         if (newClique.size() + newCandidates.size() > maxClique.size()) {
             newClique = findCliqueBruteForce(newClique, newCandidates, graph, depth + 1, world_rank, world_size);
 
-            #pragma omp critical (maxClique_update)
-            {
-                if (newClique.size() > maxClique.size()) {
-                    maxClique = newClique;
-                }
+            if (newClique.size() > maxClique.size()) {
+                maxClique = newClique;
             }
         }
     }
 
     if (depth == 0){
         if (world_rank != 0) {
-            MPI_Send(&maxClique.size(), 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-            MPI_Send(maxClique.data(), maxClique.size(), MPI_INT, 0, 0, MPI_COMM_WORLD);
+            int size = maxClique.size();
+            MPI_Send(&size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(maxClique.data(), size, MPI_INT, 0, 0, MPI_COMM_WORLD);
         } else {
             for (int i = 1; i < world_size; i++) {
                 int size;
@@ -146,10 +144,13 @@ int main(int argc, char* argv[]){
 
     maxClique = findCliqueBruteForce({}, candidates, matrix, 0, world_rank, world_size);
 
-    for (int node : maxClique) {
-        cout << node + 1 << " ";
-    }
-    
+    if (world_rank == 0){
+        cout << "Max clique size: " << maxClique.size() << endl;
+
+        for (int node : maxClique) {
+            cout << node + 1 << " ";
+        }
+    }    
 
     return 0;
 }
