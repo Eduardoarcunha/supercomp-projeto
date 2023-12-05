@@ -134,6 +134,8 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
+    double start_time = MPI_Wtime();
+
     vector<vector<int>> matrix;
     vector<int> maxClique;
     vector<int> candidates;
@@ -156,6 +158,12 @@ int main(int argc, char* argv[]){
             cout << node + 1 << " ";
         }
     }
+
+    double end_time = MPI_Wtime();
+
+/*     if (world_rank == 0){
+        cout << endl << "Time: " << end_time - start_time << endl;
+    } */
 
     MPI_Finalize();
 

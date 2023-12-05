@@ -34,5 +34,5 @@ class Clique:
         return maximal_cliques, maximum_clique
     
 
-Clique.generate_graph(num_vertices=40, connection_probability=0.7)
+Clique.generate_graph(num_vertices=20, connection_probability=0.7)
 print(Clique.find_max_clique("grafo.txt")[1])
