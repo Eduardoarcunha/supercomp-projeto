@@ -55,8 +55,6 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
         end = candidates.size();
     }
 
-    if (depth == 0) cout << "My start: " << start << " My end: " << end << endl;
-
     for (int i = start; i < end; i++) {
         int v = candidates[i];
         vector<int> newCandidates = {};
@@ -95,7 +93,6 @@ vector<int> findCliqueBruteForce(vector<int> clique, vector<int> candidates, vec
     }
 
     if (depth == 0){
-        cout << "I finished my work, rank: " << world_rank << endl;
         int size_tag = 12;
         int vector_tag = 13;
         if (world_rank != 0) {
@@ -158,7 +155,9 @@ int main(int argc, char* argv[]){
         for (int node : maxClique) {
             cout << node + 1 << " ";
         }
-    }    
+    }
+
+    MPI_Finalize();
 
     return 0;
 }
