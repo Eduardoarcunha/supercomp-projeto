@@ -1,0 +1,29 @@
+30:
+mpi-2-node:      525 - 00:50
+brute-normal:    540 - 01:14
+parallel-normal: 543 - 00:44
+
+31:
+mpi-2-node:      545 - 04:40
+brute-normal:    544 - 09:18
+parallel-normal: 546 - 04:36
+
+32:
+mpi-2-node:      548 - 00:04
+brute-normal:    547 - 00:06 
+parallel-normal: 549 - 00:03
+
+33:
+mpi-2-node:      551 - 00:11
+brute-normal:    553 - 00:18
+parallel-normal: 550 - 00:09
+
+34:
+mpi-2-node:      556 - 00:18
+brute-normal:    554 - 00:30
+parallel-normal: 555 - 00:17
+
+35:
+mpi-2-node:      557 - 00:39
+brute-normal:    559 - 00:56
+parallel-normal: 558 - 00:28

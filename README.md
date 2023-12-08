@@ -19,9 +19,11 @@ Este repositório foi criado para documentar e compartilhar a pesquisa e os dese
 
 **/executables:** Pasta com os executáveis das implementações, existe a versão para arquivos Linux e a versão para Windows.
 
+**/mpi:** Pasta com os arquivos necessários para realizar as implementações com o MPI, arquivos *.slurm* usados no cluster, além dos inputs e outputs gerados.
+
 ## Diferentes implementações
 
-Ao todo, foram feitas 5 implementações para buscar uma solução do problema, sendo elas:
+Ao todo, foram feitas 6 implementações para buscar uma solução do problema, sendo elas:
 
 **1. Força bruta sem memoização:** Implementação mais simples, que testa todas as possibilidades de cliques em um grafo, e retorna o maior clique encontrado.
 
@@ -32,6 +34,8 @@ Ao todo, foram feitas 5 implementações para buscar uma solução do problema, 
 **4. Força bruta sem memoização paralelizada:** Mesma implementação da força bruta sem memoização, porém paralelizada utilizando a biblioteca OpenMP.
 
 **5. Força bruta com memoização paralelizada:** Mesma implementação da força bruta com memoização, porém paralelizada utilizando a biblioteca OpenMP.
+
+**6. MPI sem memoização ou paralelização:** Implementação que utiliza a biblioteca MPI para realizar a comunicação entre os processos, porém sem paralelização ou memoização.
 
 **Observação:** Além delas, também, para critérios de validação e comparação, também esta presente a implementação da biblioteca networkx, que é capaz de encontrar o maior clique de um grafo.
 
@@ -52,6 +56,8 @@ Cada um deles é explicado abaixo:
 **with_mem:** Booleano que indica se as implementações com memoização serão executadas.
 
 **without_mem:** Booleano que indica se as implementações sem memoização serão executadas.
+
+**save_graphs:** Booleano que indica se os grafos gerados serão salvos em um arquivo, normalmente, o arquivo de grafo gerado é sobrescrito pelo próximo gerado, isto impede isso, e possibilita guardar os grafos gerados.
 
 ### Importante
 
@@ -86,3 +92,17 @@ Aqui é perceptível que a paralelização garantiu uma melhora de tempo, porém
 ![](results/summaries/summary_verts_60_861995/execution_time_all.png)
 
 Mais uma vez, o ganho de tempo com a paralelização não foi muito significativo, porém, em relação as implementações, estas são bem mais rápidas.
+
+Por fim, resta comparar o tempo de execução da implementação com o MPI, para isso, utilizou-se um cluster com 2 nós, cada um com 4 CPUs, para comparar fielmente com as implementações anteriores, todas elas foram rodadas no cluster utilizado, de forma que elas extrairam todos os recursos de um único nó, já a implementação com MPI, foi rodada em 2 nós, de forma que ela extraiu todos os recursos de 2 nós, os resultados podem ser vistos abaixo:
+
+**Importante:** Todas implementações foram executadas usando um arquivo .slurm, encontrados no diretório MPI, finalizando, o tempo foi recolhido manualmente através do seguinte:
+
+`scontrol show job <id_do_job>`
+
+Assim, foi possível encontrar o tempo de execução de cada job, anota-los, e comparar com os resultados obtidos pelas outras implementações.
+
+![](mpi/mpi_plots.png)
+
+Aqui, percebe-se que o MPI aprensentou um tempo melhor do que a solução de força bruta, porém ficou com tempos parecidos com a paralelização. Comparar o MPI com a paralelização não é trivial, uma vez que ambos são dependentes do Hardware utilizado, dificultando a comparação, de qualquer forma, ambos são melhores que uma implementação de força bruta simples.
+
+Enfim, finaliza-se aqui o projeto de desenvolver soluções para a busca do maior clique em um grafo, e comparar o tempo de execução de cada uma delas, para diferentes problemas, e diferentes implementações.

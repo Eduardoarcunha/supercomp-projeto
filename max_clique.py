@@ -10,14 +10,14 @@ input_file = "grafo.txt"
 
 
 class MaxClique():
-    def __init__(self, vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True, mpi=False):
+    def __init__(self, vertices=range(5, 31, 1), linux=True, with_mem=True, without_mem=True, save_graphs=False):
         self.input = "grafo.txt"
         self.vertices = vertices
         self.with_mem = with_mem
         self.without_mem = without_mem
-        self.mpi = mpi
         self.directory = "./executables_linux"
-        self.id = f'verts_{len(vertices) + 4}_{str(uuid.uuid4())[:6]}'
+        self.id = f'verts_{vertices[0]}_{vertices[-1]}_{str(uuid.uuid4())[:6]}'
+        self.save_graphs = save_graphs
 
         self.executables_dict = {
             "heuristic": {"executable": "/clique_heuristic", "color": "#1f77b4"}
@@ -31,10 +31,6 @@ class MaxClique():
             self.executables_dict["brute_force_with_mem"] = {"executable": "/clique_brute_with_mem", "color": "#d62728"}
             self.executables_dict["parallel_with_mem"] = {"executable": "/clique_parallel_with_mem", "color": "#9467bd"}
 
-        if self.mpi:
-            for p in range(1, 4):
-                self.executables_dict[f"mpi_{p}"] = {"executable": f"/clique_mpi", "color": "#8c564b"}   
-
         if not linux:
             for name in self.executables_dict:
                 self.executables_dict[name]["executable"] += ".exe"
@@ -45,11 +41,7 @@ class MaxClique():
         }
 
         for executable in self.executables_dict.keys():
-            if executable == "mpi":
-                for p in range(1, 4):
-                    self.data[f"{executable}_{p}"] = []
-            else:
-                self.data[executable] = []
+            self.data[executable] = []
 
         self.output = {
             "vertices": self.vertices,
@@ -139,7 +131,10 @@ class MaxClique():
     def calculate_times(self):
         for m in self.vertices:
             print(f'Calculating for {m} vertices...')
-            Clique.generate_graph(num_vertices=m, connection_probability=0.7)
+            if self.save_graphs:
+                self.input = f'grafo_{m}.txt'
+
+            Clique.generate_graph(num_vertices=m, connection_probability=0.7, filename=self.input)
 
             res = {}
             start = time.perf_counter()
@@ -167,5 +162,5 @@ class MaxClique():
         self.save_pickle_data()
         self.plot_data()
 
-max_clique = MaxClique(vertices=range(31, 34, 1), linux=True, with_mem=False, without_mem=True, mpi=True)
+max_clique = MaxClique(vertices=range(30, 36, 1), linux=False, with_mem=False, without_mem=True, save_graphs=True)
 max_clique.run()
